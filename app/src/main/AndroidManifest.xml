@@ -24,6 +24,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ItemListActivity" />
         </activity>
+
+
+        <provider
+            android:name="com.flochaz.noeudnoeud.database.ItemProvider"
+            android:authorities="com.flochaz.noeudnoeud.provider"
+            android:enabled="true"
+            android:exported="false" >
+        </provider>
     </application>
 
 </manifest>

@@ -14,6 +14,12 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(Item.CREATE_TABLE);
+        Item item = new Item("Sylvester");
+
+        db.insert(Item.TABLE_NAME, null, item.getContent());
+
+        item.name = "Danny";
+        db.insert(Item.TABLE_NAME, null, item.getContent());
     }
 
     @Override

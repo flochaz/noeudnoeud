@@ -1,14 +1,21 @@
 package com.flochaz.noeudnoeud;
 
 import android.app.Activity;
-import android.os.Bundle;
 import android.support.v4.app.ListFragment;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.support.v4.widget.SimpleCursorAdapter;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.ArrayAdapter;
+import android.view.ViewGroup;
 import android.widget.ListView;
 
 
-import com.flochaz.noeudnoeud.dummy.DummyContent;
+import com.flochaz.noeudnoeud.database.Item;
+import com.flochaz.noeudnoeud.database.ItemProvider;
 
 /**
  * A list fragment representing a list of Items. This fragment
@@ -46,8 +53,9 @@ public class ItemListFragment extends ListFragment {
     public interface Callbacks {
         /**
          * Callback for when an item has been selected.
+         * @param id
          */
-        public void onItemSelected(String id);
+        public void onItemSelected(long id);
     }
 
     /**
@@ -56,7 +64,7 @@ public class ItemListFragment extends ListFragment {
      */
     private static Callbacks sDummyCallbacks = new Callbacks() {
         @Override
-        public void onItemSelected(String id) {
+        public void onItemSelected(long id) {
         }
     };
 
@@ -67,16 +75,39 @@ public class ItemListFragment extends ListFragment {
     public ItemListFragment() {
     }
 
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.fragment_item_list, null);
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // TODO: replace with a real list adapter.
-        setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(
-                getActivity(),
-                android.R.layout.simple_list_item_activated_1,
-                android.R.id.text1,
-                DummyContent.ITEMS));
+        setListAdapter(new SimpleCursorAdapter(getActivity(),
+                R.layout.item_list, null, new String[]{
+                Item.COL_NAME}, new int[]{R.id.cardName}, 0));
+
+        // Load the content
+        getLoaderManager().initLoader(0, null, new LoaderCallbacks<Cursor>() {
+            @Override
+            public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+                return new CursorLoader(getActivity(),
+                        ItemProvider.URI_ITEMS, Item.FIELDS, null, null,
+                        null);
+            }
+
+            @Override
+            public void onLoadFinished(Loader<Cursor> loader, Cursor c) {
+                ((SimpleCursorAdapter) getListAdapter()).swapCursor(c);
+            }
+
+            @Override
+            public void onLoaderReset(Loader<Cursor> arg0) {
+                ((SimpleCursorAdapter) getListAdapter()).swapCursor(null);
+            }
+        });
     }
 
     @Override
@@ -111,14 +142,14 @@ public class ItemListFragment extends ListFragment {
     }
 
     @Override
-    public void onListItemClick(ListView listView, View view, int position, long id) {
+    public void onListItemClick(ListView listView, View view, int position,
+                                long id) {
         super.onListItemClick(listView, view, position, id);
 
         // Notify the active callbacks interface (the activity, if the
         // fragment is attached to one) that an item has been selected.
-        mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
+        mCallbacks.onItemSelected(getListAdapter().getItemId(position));
     }
-
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);

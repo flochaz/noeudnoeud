@@ -3,6 +3,12 @@ package com.flochaz.noeudnoeud;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
+import com.flochaz.noeudnoeud.database.DatabaseHandler;
+import com.flochaz.noeudnoeud.database.Item;
 
 
 /**
@@ -55,15 +61,16 @@ public class ItemListActivity extends FragmentActivity
     /**
      * Callback method from {@link ItemListFragment.Callbacks}
      * indicating that the item with the given ID was selected.
+     * @param id
      */
     @Override
-    public void onItemSelected(String id) {
+    public void onItemSelected(long id) {
         if (mTwoPane) {
             // In two-pane mode, show the detail view in this activity by
             // adding or replacing the detail fragment using a
             // fragment transaction.
             Bundle arguments = new Bundle();
-            arguments.putString(ItemDetailFragment.ARG_ITEM_ID, id);
+            arguments.putLong(ItemDetailFragment.ARG_ITEM_ID, id);
             ItemDetailFragment fragment = new ItemDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -77,5 +84,27 @@ public class ItemListActivity extends FragmentActivity
             detailIntent.putExtra(ItemDetailFragment.ARG_ITEM_ID, id);
             startActivity(detailIntent);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.list_activity, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        boolean result = false;
+        if (R.id.newItem == item.getItemId()) {
+            result = true;
+            // Create a new person.
+            Item p = new Item("");
+            DatabaseHandler.getInstance(this).putItem(p);
+            // Open a new fragment with the new id
+            onItemSelected(p.id);
+        }
+
+        return result;
     }
 }
